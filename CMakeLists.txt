@@ -1,19 +1,15 @@
 cmake_minimum_required(VERSION 3.31)
-project(Tetris)
+project(TetrisSDL)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 17)
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
 
-# SDL2 paths (Homebrew default for Apple Silicon)
-include_directories(include)
-include_directories(/opt/homebrew/include/SDL2)
-link_directories(/opt/homebrew/lib)
-file(GLOB SOURCES "src/*.cpp")
-
-add_executable(Tetris src/main.cpp
-        src/controls.cpp
-        include/pieces.h
-        src/pieces.cpp
-        src/collision.cpp
-        include/collision.h)
-target_link_libraries(Tetris SDL2)
+add_executable(TetrisSDL
+        src/main.cpp
+        src/Game.cpp  include/Game.hpp
+        src/Board.cpp include/Board.hpp
+        src/Tetromino.cpp include/Tetromino.hpp
+        src/Renderer.cpp include/Renderer.hpp
+)
+target_link_libraries(TetrisSDL ${SDL2_LIBRARIES})
