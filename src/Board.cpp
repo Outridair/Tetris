@@ -6,14 +6,6 @@
 #include <algorithm>
 #include <SDL_log.h>
 
-Board::Board() {
-    // set every cell to 0
-    for (auto &row : grid) {
-        row.fill(0);
-    }
-}
-
-
 bool Board::isOccupied(int x, int y) const {
     // 1) Left or right wall
     if (x < 0 || x >= BOARD_WIDTH) {
@@ -36,28 +28,35 @@ bool Board::isOccupied(int x, int y) const {
     // 4) Inside grid: check if cell is filled
     int cell = grid[y][x];
     SDL_Log("isOccupied: checking grid[%d][%d] = %d", y, x, cell);
-    return cell != 0;
+    return cell != EMPTY;
 }
 
 
-void Board::occupy(int x, int y) {
-    if (x < 0 || x>=BOARD_WIDTH || y < 0 || y>=BOARD_HEIGHT)
-        grid[y][x] = 1;
+void Board::occupy(int x, int y, Tetromino::Type t) {
+    if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT)
+        grid[y][x] = t;
 }
+
+Tetromino::Type Board::getCellType(int x, int y) const {
+    if (x<0||x>=BOARD_WIDTH||y<0||y>=BOARD_HEIGHT) return EMPTY;
+    Tetromino::Type t = grid[y][x];
+    return t;
+}
+
 
 int Board::clearFullLines() {
     int linesCleared = 0;
     for (int y = BOARD_HEIGHT -1; y>=0; --y) {
         bool full = true;
         for (int x = 0; x < BOARD_WIDTH; ++x) {
-            if (grid[y][x] == 0) {full = false; break; }
+            if (grid[y][x] == EMPTY) {full = false; break; }
         }
         if (full) {
             ++linesCleared;
             for (int row = y; row > 0; --row) {
                 grid[row] = grid[row -1];
             }
-            grid[0].fill(0);
+            grid[0].fill(EMPTY);
             ++y;
         }
     }

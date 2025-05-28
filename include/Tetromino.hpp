@@ -11,7 +11,7 @@ using Shape = std::array<std::array<int, 4>,4>;
 
 class Tetromino {
 public:
-    enum Type {I, O, T, S, Z, J, L};
+    enum Type : int { EMPTY = -1, I = 0, O, T, S, Z, J, L };
     explicit Tetromino(Type t);
     [[nodiscard]] Type getType() const { return type; }
     [[nodiscard]] const Shape& currentShape() const;

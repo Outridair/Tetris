@@ -48,13 +48,13 @@ void Game::processInput(int& pieceX, int& pieceY) {
 
             switch (e.key.keysym.sym) {
                 case SDLK_LEFT:
-                    if (checkCollision(pieceX - 1, pieceY)) pieceX--;
+                    if (!checkCollision(pieceX - 1, pieceY)) pieceX--;
                     break;
                 case SDLK_RIGHT:
-                    if (checkCollision(pieceX + 1, pieceY)) pieceX++;
+                    if (!checkCollision(pieceX + 1, pieceY)) pieceX++;
                     break;
                 case SDLK_DOWN:
-                    if (checkCollision(pieceX, pieceY)) pieceY++;
+                    if (!checkCollision(pieceX, pieceY)) pieceY++;
                     break;
             }
         }
@@ -79,14 +79,13 @@ bool Game::checkCollision(int newX, int newY) const {
 
 void Game::lockPiece() {
     const auto& shape = currentPiece->currentShape();
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            if (shape[i][j]) {
+    auto type = currentPiece->getType();  // add a getter in Tetromino
+    for(int i=0;i<4;++i)
+        for(int j=0;j<4;++j)
+            if(shape[i][j])
                 board.occupy(currentPiece->x + j,
-                             currentPiece->y + i);
-            }
-        }
-    }
+                             currentPiece->y + i,
+                             type);
 }
 
 void Game::spawnNewPiece() {
