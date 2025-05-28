@@ -31,7 +31,7 @@ private:
     void lockPiece();
     void spawnNewPiece();
 
-    void processInput();
+    void processInput(int &pieceX, int &pieceY);
     void update();
     void render();
 };

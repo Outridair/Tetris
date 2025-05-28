@@ -10,11 +10,16 @@ bool Game::init(const char* title, int w, int h) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << "\n";
         return false;
     }
-    window = SDL_CreateWindow(title, 100, 100, w, h, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!window || !renderer) return false;
     currentPiece = new Tetromino(static_cast<Tetromino::Type>(rand() % 7));
-    gfx = new Renderer(renderer);
+    int winW, winH;
+    SDL_GetWindowSize(window, &winW, &winH);
+    int offsetX = (winW  - BOARD_PIX_W) / 2;
+    int offsetY = (winH  - BOARD_PIX_H) / 2;
+
+    gfx = new Renderer(renderer, offsetX, offsetY);
     running = true;
     return true;
 }
@@ -25,7 +30,6 @@ void Game::run() {
     while (running) {
         Uint32 frameStart = SDL_GetTicks();
 
-        processInput();
         update();
         render();
 
@@ -35,11 +39,25 @@ void Game::run() {
     }
 }
 
-void Game::processInput() {
+void Game::processInput(int& pieceX, int& pieceY) {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) running = false;
-        // TODO handle left/right/down/ rotate/ drop
+        if (e.type == SDL_KEYDOWN) {
+            std::cout << "Key pressed: " << SDL_GetKeyName(e.key.keysym.sym) << std::endl;
+
+            switch (e.key.keysym.sym) {
+                case SDLK_LEFT:
+                    if (checkCollision(pieceX - 1, pieceY)) pieceX--;
+                    break;
+                case SDLK_RIGHT:
+                    if (checkCollision(pieceX + 1, pieceY)) pieceX++;
+                    break;
+                case SDLK_DOWN:
+                    if (checkCollision(pieceX, pieceY)) pieceY++;
+                    break;
+            }
+        }
     }
 }
 
@@ -50,8 +68,10 @@ bool Game::checkCollision(int newX, int newY) const {
             if (!shape[i][j]) continue;
 
             // Board::isOccupied checks both grid bounds and filled cells
-            if (board.isOccupied(newX + j, newY + i))
+            if (board.isOccupied(newX + j, newY + i)) {
                 return true;
+            }
+
         }
     }
     return false;
@@ -71,26 +91,27 @@ void Game::lockPiece() {
 
 void Game::spawnNewPiece() {
     delete currentPiece;
-    std::srand(unsigned(std::time(nullptr)));  // seed once in practice—moved here for clarity
     currentPiece = new Tetromino(
         static_cast<Tetromino::Type>(std::rand() % 7)
     );
+    currentPiece->x = BOARD_WIDTH/2 - 2;
+    currentPiece->y = 0;
     // reset drop timer so the new piece doesn't immediately fall
     lastDropTime = SDL_GetTicks();
+    SDL_Log("Spawned Tetromino: %s", toString(currentPiece->getType()));
 }
 
 void Game::update() {
     Uint32 now = SDL_GetTicks();
+    processInput(currentPiece->x, currentPiece->y);
 
     if (now - lastDropTime >= dropInterval) {
         lastDropTime = now;
 
         int tryY = currentPiece->y + 1;
-        // 1) If no collision, move down
         if (!checkCollision(currentPiece->x, tryY)) {
             currentPiece->y = tryY;
-        }
-        else {
+        } else {
             // 2) Otherwise lock it in place...
             lockPiece();
 
@@ -101,11 +122,11 @@ void Game::update() {
             // 4) spawn a fresh piece
             spawnNewPiece();
 
-            // 5) check for game-over (new piece immediately collides)
-            if (checkCollision(currentPiece->x, currentPiece->y)) {
-                running = false;
-                std::cout << "Game Over!" << std::endl;
-            }
+            // // 5) check for game-over (new piece immediately collides)
+            // if (checkCollision(currentPiece->x, currentPiece->y)) {
+            //     running = false;
+            //     std::cout << "Game Over!" << std::endl;
+            // }
         }
     }
 }

@@ -4,6 +4,7 @@
 
 #include "../include/Tetromino.hpp"
 #include "../include/Board.hpp"
+#include <SDL.h>
 
 Tetromino::Tetromino(Type t)
     : type(t), rotationIndex(0), x(BOARD_WIDTH/2 - 2), y(0) {
@@ -100,4 +101,16 @@ void Tetromino::rotateCCW() {
     rotationIndex = (rotationIndex + 3) % 4;
 }
 
+SDL_Color Tetromino::getColor() const {
+    switch (type) {
+        case I: return SDL_Color{0, 255, 255, 255};   // Cyan
+        case O: return SDL_Color{255, 255, 0, 255};   // Yellow
+        case T: return SDL_Color{128,   0, 128, 255}; // Purple
+        case S: return SDL_Color{0, 255,   0, 255};   // Green
+        case Z: return SDL_Color{255,   0,   0, 255}; // Red
+        case J: return SDL_Color{0,   0, 255, 255};   // Blue
+        case L: return SDL_Color{255, 165,   0, 255}; // Orange
+        default: return SDL_Color{200, 200, 200, 255};
+    }
+}
 

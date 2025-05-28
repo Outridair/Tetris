@@ -4,17 +4,41 @@
 
 #include "../include/Board.hpp"
 #include <algorithm>
+#include <SDL_log.h>
 
 Board::Board() {
-
+    // set every cell to 0
+    for (auto &row : grid) {
+        row.fill(0);
+    }
 }
 
 
 bool Board::isOccupied(int x, int y) const {
-    if (x < 0 || x>=BOARD_WIDTH || y < 0 || y>=BOARD_HEIGHT)
+    // 1) Left or right wall
+    if (x < 0 || x >= BOARD_WIDTH) {
+        SDL_Log("isOccupied: collision with wall (x=%d)", x);
         return true;
-    return grid[y][x] != 0;
+    }
+
+    // 2) Above the top of the board (allowed)
+    if (y < 0) {
+        SDL_Log("isOccupied: above board (y=%d)", y);
+        return false;
+    }
+
+    // 3) Bottom of the board
+    if (y >= BOARD_HEIGHT) {
+        SDL_Log("isOccupied: collision with floor (y=%d)", y);
+        return true;
+    }
+
+    // 4) Inside grid: check if cell is filled
+    int cell = grid[y][x];
+    SDL_Log("isOccupied: checking grid[%d][%d] = %d", y, x, cell);
+    return cell != 0;
 }
+
 
 void Board::occupy(int x, int y) {
     if (x < 0 || x>=BOARD_WIDTH || y < 0 || y>=BOARD_HEIGHT)
