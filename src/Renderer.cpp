@@ -9,11 +9,9 @@ void Renderer::drawBoard(const Board& board) {
     for(int y=0;y<BOARD_HEIGHT;++y) {
         for(int x=0;x<BOARD_WIDTH;++x) {
             Tetromino::Type t = board.getCellType(x,y);
-
-                // convert int back to enum, get its color
-                SDL_Color c = Tetromino(t).getColor();
-                drawCell(x, y, c);
-
+            // convert int back to enum, get its color
+            SDL_Color c = Tetromino(t).getColor();
+            drawCell(x, y, c);
         }
     }
 }

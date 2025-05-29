@@ -7,6 +7,7 @@
 #include <array>
 #include <SDL_pixels.h>
 
+class Board;
 using Shape = std::array<std::array<int, 4>,4>;
 
 class Tetromino {
@@ -15,8 +16,8 @@ public:
     explicit Tetromino(Type t);
     [[nodiscard]] Type getType() const { return type; }
     [[nodiscard]] const Shape& currentShape() const;
-    void rotateCW();
-    void rotateCCW();
+    bool tryRotateCW(const Board& board);
+    bool tryRotateCCW(const Board& board);
     [[nodiscard]] SDL_Color getColor() const;
 
     int x, y;
@@ -26,6 +27,7 @@ private:
     int rotationIndex;
     std::array<Shape, 4> rotations{};
     void initRotations();
+    bool collides(const Board& board, int testX, int testY, int testRot) const;
 };
 
 // 2) Now that Tetromino::Type is in scope, we can define the name‐array:

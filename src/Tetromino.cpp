@@ -5,6 +5,15 @@
 #include "../include/Tetromino.hpp"
 #include "../include/Board.hpp"
 #include <SDL.h>
+#include <vector>
+
+static const std::vector<std::pair<int,int>> kickOffsets = {
+    {0, 0},
+    {-1, 0},
+    {+1, 0},
+    {0, -1},
+    {0, +1},
+};
 
 Tetromino::Tetromino(Type t)
     : type(t), rotationIndex(0), x(BOARD_WIDTH/2 - 2), y(0) {
@@ -95,12 +104,30 @@ const Shape &Tetromino::currentShape() const {
     return rotations[rotationIndex];
 }
 
-void Tetromino::rotateCW() {
-    rotationIndex = (rotationIndex + 1) % 4;
+bool Tetromino::tryRotateCW(const Board& board) {
+    int newRot = (rotationIndex + 1) % 4;
+    for (auto [dx, dy] : kickOffsets) {
+        if (!collides(board, x + dx, y + dy, newRot)) {
+            rotationIndex = newRot;
+            x += dx;
+            y += dy;
+            return true;
+        }
+    }
+    return false;
 }
 
-void Tetromino::rotateCCW() {
-    rotationIndex = (rotationIndex + 3) % 4;
+bool Tetromino::tryRotateCCW(const Board& board) {
+    int newRot = (rotationIndex + 3) % 4;
+    for (auto [dx, dy] : kickOffsets) {
+        if (!collides(board, x + dx, y + dy, newRot)) {
+            rotationIndex = newRot;
+            x += dx;
+            y += dy;
+            return true;
+        }
+    }
+    return false;
 }
 
 SDL_Color Tetromino::getColor() const {
@@ -114,5 +141,20 @@ SDL_Color Tetromino::getColor() const {
         case L: return SDL_Color{255, 165,   0, 255}; // Orange
         default: return SDL_Color{200, 200, 200, 255};
     }
+}
+
+bool Tetromino::collides(const Board& board,
+                         int testX, int testY,
+                         int testRot) const
+{
+    const auto& shape = rotations[testRot];
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            if (!shape[i][j]) continue;
+            if (board.isOccupied(testX + j, testY + i))
+                return true;
+        }
+    }
+    return false;
 }
 

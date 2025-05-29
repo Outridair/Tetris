@@ -59,10 +59,10 @@ void Game::processInput() {
                     if (!checkCollision(currentPiece->x , currentPiece->y + 1)) currentPiece->y += 1;
                     break;
                 case SDLK_q:
-                    currentPiece->rotateCCW();
+                    currentPiece->tryRotateCCW(board);
                     break;
                 case SDLK_e:
-                    currentPiece->rotateCW();
+                    currentPiece->tryRotateCW(board);
                     break;
             }
         }
