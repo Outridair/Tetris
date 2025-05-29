@@ -27,7 +27,6 @@ bool Board::isOccupied(int x, int y) const {
 
     // 4) Inside grid: check if cell is filled
     int cell = grid[y][x];
-    SDL_Log("isOccupied: checking grid[%d][%d] = %d", y, x, cell);
     return cell != EMPTY;
 }
 

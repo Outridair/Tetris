@@ -29,9 +29,10 @@ void Game::run() {
     const int frameDelay = 1000 / FPS;
     while (running) {
         Uint32 frameStart = SDL_GetTicks();
-
+        processInput();
         update();
         render();
+
 
         int frameTime = SDL_GetTicks() - frameStart;
         if (frameDelay > frameTime)
@@ -39,22 +40,29 @@ void Game::run() {
     }
 }
 
-void Game::processInput(int& pieceX, int& pieceY) {
+void Game::processInput() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) running = false;
         if (e.type == SDL_KEYDOWN) {
-            std::cout << "Key pressed: " << SDL_GetKeyName(e.key.keysym.sym) << std::endl;
-
             switch (e.key.keysym.sym) {
                 case SDLK_LEFT:
-                    if (!checkCollision(pieceX - 1, pieceY)) pieceX--;
+                case SDLK_a:
+                    if (!checkCollision(currentPiece->x - 1, currentPiece->y)) currentPiece->x -= 1;
                     break;
                 case SDLK_RIGHT:
-                    if (!checkCollision(pieceX + 1, pieceY)) pieceX++;
+                case SDLK_d:
+                    if (!checkCollision(currentPiece->x  + 1, currentPiece->y)) currentPiece->x += 1;
                     break;
                 case SDLK_DOWN:
-                    if (!checkCollision(pieceX, pieceY)) pieceY++;
+                case SDLK_s:
+                    if (!checkCollision(currentPiece->x , currentPiece->y + 1)) currentPiece->y += 1;
+                    break;
+                case SDLK_q:
+                    currentPiece->rotateCCW();
+                    break;
+                case SDLK_e:
+                    currentPiece->rotateCW();
                     break;
             }
         }
@@ -80,6 +88,7 @@ bool Game::checkCollision(int newX, int newY) const {
 void Game::lockPiece() {
     const auto& shape = currentPiece->currentShape();
     auto type = currentPiece->getType();  // add a getter in Tetromino
+    SDL_Log("Locked Tetromino: %s", toString(type));
     for(int i=0;i<4;++i)
         for(int j=0;j<4;++j)
             if(shape[i][j])
@@ -102,7 +111,6 @@ void Game::spawnNewPiece() {
 
 void Game::update() {
     Uint32 now = SDL_GetTicks();
-    processInput(currentPiece->x, currentPiece->y);
 
     if (now - lastDropTime >= dropInterval) {
         lastDropTime = now;

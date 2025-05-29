@@ -14,6 +14,8 @@ Tetromino::Tetromino(Type t)
 void Tetromino::initRotations() {
     Shape base{};
     switch (type) {
+        case EMPTY:
+            break;
         case I:
             base = {{
                 {{0,0,0,0}},
