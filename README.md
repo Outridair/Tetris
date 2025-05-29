@@ -12,7 +12,5 @@ Using CLion from Jetbrains. on MacOS Sequoia
 `brew install sdl2_ttf`
 
 ## Initial Run
-`g++ -o hello main.cpp`
-then
-`./hello`
+The CLion build/run/debug command should suffice. 
 
