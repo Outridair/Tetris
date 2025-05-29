@@ -35,11 +35,14 @@ void Tetromino::initRotations() {
             break;
         case O:
             base = {{
-                {{0,1,1,0}},
-                {{0,1,1,0}},
                 {{0,0,0,0}},
+                {{0,1,1,0}},
+                {{0,1,1,0}},
                 {{0,0,0,0}}
             }};
+            for (int i = 0; i < 4; ++i) {
+                rotations[i] = base;
+            }
             break;
         case T:
             base = {{
@@ -51,33 +54,33 @@ void Tetromino::initRotations() {
             break;
         case S:
             base = {{
+                {{0,0,0,0}},
                 {{0,1,1,0}},
                 {{1,1,0,0}},
-                {{0,0,0,0}},
                 {{0,0,0,0}}
             }};
             break;
         case Z:
             base = {{
+                {{0,0,0,0}},
                 {{1,1,0,0}},
                 {{0,1,1,0}},
-                {{0,0,0,0}},
                 {{0,0,0,0}}
             }};
             break;
         case J:
             base = {{
+                {{0,0,0,0}},
                 {{1,0,0,0}},
                 {{1,1,1,0}},
-                {{0,0,0,0}},
                 {{0,0,0,0}}
             }};
             break;
         case L:
             base = {{
+                {{0,0,0,0}},
                 {{0,0,1,0}},
                 {{1,1,1,0}},
-                {{0,0,0,0}},
                 {{0,0,0,0}}
             }};
             break;
@@ -106,6 +109,10 @@ const Shape &Tetromino::currentShape() const {
 
 bool Tetromino::tryRotateCW(const Board& board) {
     int newRot = (rotationIndex + 1) % 4;
+    if (type == O) {
+        rotationIndex = newRot;
+        return true;
+    }
     for (auto [dx, dy] : kickOffsets) {
         if (!collides(board, x + dx, y + dy, newRot)) {
             rotationIndex = newRot;
@@ -119,6 +126,10 @@ bool Tetromino::tryRotateCW(const Board& board) {
 
 bool Tetromino::tryRotateCCW(const Board& board) {
     int newRot = (rotationIndex + 3) % 4;
+    if (type == O) {
+        rotationIndex = newRot;
+        return true;
+    }
     for (auto [dx, dy] : kickOffsets) {
         if (!collides(board, x + dx, y + dy, newRot)) {
             rotationIndex = newRot;
