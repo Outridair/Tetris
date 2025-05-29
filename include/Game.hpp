@@ -5,6 +5,7 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include "Board.hpp"
 #include "Tetromino.hpp"
 #include "Renderer.hpp"
@@ -19,6 +20,12 @@ private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     bool running = false;
+
+    int score = 0;
+    int linesCleared = 0;
+    int level = 1;
+
+    TTF_Font* font = nullptr;
 
     Board board;
     Tetromino* currentPiece = nullptr;

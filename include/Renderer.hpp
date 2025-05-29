@@ -5,6 +5,7 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include "Board.hpp"
 #include "Tetromino.hpp"
 
@@ -14,14 +15,16 @@ constexpr int BOARD_PIX_H = BOARD_HEIGHT * CELL_SIZE;
 
 class Renderer {
 public:
-    Renderer(SDL_Renderer* ren, int offsetX, int offsetY) : ren(ren), offsetX(offsetX), offsetY(offsetY) {}
+    Renderer(SDL_Renderer* ren, int offsetX, int offsetY, TTF_Font* fnt) : ren(ren), offsetX(offsetX), offsetY(offsetY), font(fnt) {}
     void drawBoard(const Board& board);
     void drawTetromino(const Tetromino& t);
+    void drawScore(int score, int level, int lines);
 
 private:
     SDL_Renderer* ren;
     int offsetX;
     int offsetY;
+    TTF_Font* font;
 
     void drawCell(int x, int y, SDL_Color color);
 };

@@ -10,6 +10,18 @@ bool Game::init(const char* title, int w, int h) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << "\n";
         return false;
     }
+    if (TTF_Init() != 0) {
+        std::cerr << "TTF_Init Error: " << TTF_GetError() << "\n";
+        return false;
+    }
+    char* base = SDL_GetBasePath();
+    std::string fontPath = "../assets/Helvetica.ttc";
+    SDL_free(base);
+    font = TTF_OpenFont(fontPath.c_str(), 24);    if (!font) {
+        std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << "\n";
+        return false;
+    }
+
     window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!window || !renderer) return false;
@@ -19,7 +31,11 @@ bool Game::init(const char* title, int w, int h) {
     int offsetX = (winW  - BOARD_PIX_W) / 2;
     int offsetY = (winH  - BOARD_PIX_H) / 2;
 
-    gfx = new Renderer(renderer, offsetX, offsetY);
+    score        = 0;
+    linesCleared = 0;
+    level        = 1;
+
+    gfx = new Renderer(renderer, offsetX, offsetY, font);
     running = true;
     return true;
 }
@@ -119,21 +135,25 @@ void Game::update() {
         if (!checkCollision(currentPiece->x, tryY)) {
             currentPiece->y = tryY;
         } else {
-            // 2) Otherwise lock it in place...
             lockPiece();
 
-            // 3) ...and clear any full lines
-            int linesCleared = board.clearFullLines();
-            // (you can update score/level here based on linesCleared)
+            int cleared = board.clearFullLines();
+            if (cleared > 0) {
+                linesCleared += cleared;
+                static const int pointsPer[5] = {0, 100, 300, 500, 800 };
+                score += pointsPer[cleared] * level;
 
-            // 4) spawn a fresh piece
+                level = 1 + linesCleared / 10;
+
+                dropInterval = std::max(50u, 500u - (level -1 ) * 25);
+            }
+
             spawnNewPiece();
 
-            // // 5) check for game-over (new piece immediately collides)
-            // if (checkCollision(currentPiece->x, currentPiece->y)) {
-            //     running = false;
-            //     std::cout << "Game Over!" << std::endl;
-            // }
+            if (checkCollision(currentPiece->x, currentPiece->y)) {
+                running = false;
+                std::cout << "Game Over!" << std::endl;
+            }
         }
     }
 }
@@ -145,11 +165,15 @@ void Game::render() {
 
     gfx->drawBoard(board);
     gfx->drawTetromino(*currentPiece);
+    gfx->drawScore(score, level, linesCleared);
 
     SDL_RenderPresent(renderer);
 }
 
 Game::~Game() {
+    if (font) TTF_CloseFont(font);
+    TTF_Quit();
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
