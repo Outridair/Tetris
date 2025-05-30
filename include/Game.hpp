@@ -24,14 +24,18 @@ public:
     ~Game();
 private:
     GameState state = GameState::StartScreen;
+
     SDL_Texture* startTexture = nullptr;
     SDL_Texture* startScreenTexture = nullptr;
-
     SDL_Rect startDst = {};
     SDL_Rect startScreenDst = {};
-
     Uint32 blinkTimer = 0;
     bool showText = true;
+
+    SDL_Texture* gameOverTexture     = nullptr;
+    SDL_Texture* gameOverInstrTexture= nullptr;
+    SDL_Rect     gameOverDst;
+    SDL_Rect     instrDst;
 
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
@@ -57,6 +61,8 @@ private:
     void processInput();
     void update();
     void render() const;
+
+    void startFreshGame();
 };
 
 
