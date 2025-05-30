@@ -7,6 +7,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include "Board.hpp"
 #include "Tetromino.hpp"
 #include "Renderer.hpp"
@@ -35,11 +36,26 @@ private:
 
     SDL_Texture* gameOverTexture     = nullptr;
     SDL_Texture* gameOverInstrTexture= nullptr;
-    SDL_Rect     gameOverDst;
-    SDL_Rect     instrDst;
+    SDL_Rect     gameOverDst = {};
+    SDL_Rect     instrDst = {};
 
     SDL_Texture* pauseTexture = nullptr;
-    SDL_Rect pauseDst;
+    SDL_Rect pauseDst = {};
+
+    Mix_Music* menuBGM = nullptr;
+    Mix_Music* gameBGM = nullptr;
+
+    Mix_Chunk* sfxDrop = nullptr;
+    Mix_Chunk* sfxGameOver = nullptr;
+    Mix_Chunk* sfxStartOrContinue = nullptr;
+    Mix_Chunk* sfxLevelUp = nullptr;
+    Mix_Chunk* sfxLineClear = nullptr;
+    Mix_Chunk* sfxMove = nullptr;
+    Mix_Chunk* sfxPause = nullptr;
+    Mix_Chunk* sfxRotateCCW = nullptr;
+    Mix_Chunk* sfxRotateCW = nullptr;
+
+
 
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;

@@ -20,6 +20,35 @@ bool Game::init(const char* title, int w, int h) {
         return false;
     }
 
+    int flags = MIX_INIT_OGG | MIX_INIT_MP3;
+
+    if (!(Mix_Init(flags) & flags)) {
+        std::cerr << "Mix_Init Error: " << Mix_GetError() << "\n";
+        return false;
+    }
+
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        std::cerr << "Mix_OpenAudio Error: " << Mix_GetError() << "\n";
+        return false;
+    }
+
+    menuBGM = Mix_LoadMUS("../assets/sound/music/mainMenuTheme.mp3");
+    if (!menuBGM) std::cerr << "Mix_LoadMUS Error: " << Mix_GetError() << "\n";
+
+    gameBGM = Mix_LoadMUS("../assets/sound/music/inGameMusic.mp3");
+    if (!gameBGM) std::cerr << "Mix_LoadMUS Error: " << Mix_GetError() << "\n";
+
+    sfxDrop = Mix_LoadWAV("../assets/sound/effects/blockDrop.ogg");
+    sfxGameOver = Mix_LoadWAV("../assets/sound/effects/gameOver.ogg");
+    sfxLevelUp = Mix_LoadWAV("../assets/sound/effects/levelUp.ogg");
+    sfxLineClear = Mix_LoadWAV("../assets/sound/effects/lineClear.ogg");
+    sfxMove = Mix_LoadWAV("../assets/sound/effects/move.ogg");
+    sfxPause = Mix_LoadWAV("../assets/sound/effects/pause.ogg");
+    sfxRotateCCW = Mix_LoadWAV("../assets/sound/effects/rotateCCW.ogg");
+    sfxRotateCW = Mix_LoadWAV("../assets/sound/effects/rotateCW.ogg");
+    sfxStartOrContinue = Mix_LoadWAV("../assets/sound/effects/startOrContinue.ogg");
+
+
     // 2) Load font
     // (or remove SDL_GetBasePath if you don't actually need it)
     font = TTF_OpenFont("../assets/Helvetica.ttc", 24);
@@ -139,6 +168,7 @@ bool Game::init(const char* title, int w, int h) {
     std::srand(unsigned(std::time(nullptr)));
 
     running = true;
+    Mix_PlayMusic(menuBGM, -1);
     return true;
 }
 
@@ -177,8 +207,9 @@ void Game::processInput() {
         if (e.type == SDL_KEYDOWN) {
             switch (state) {
                 case GameState::StartScreen:
-                    // any key enters Playing
+                    Mix_PlayChannel(-1, sfxStartOrContinue, 0);
                     startFreshGame();
+                    Mix_PlayMusic(gameBGM, -1);
                     state = GameState::Playing;
                     lastDropTime = SDL_GetTicks();
                     break;
@@ -188,28 +219,37 @@ void Game::processInput() {
                         case SDLK_LEFT:
                         case SDLK_a:
                                 if (!checkCollision(currentPiece->x - 1, currentPiece->y)) currentPiece->x -= 1;
+                                Mix_PlayChannel(-1, sfxMove, 0);
                                 break;
                         case SDLK_RIGHT:
                         case SDLK_d:
                                 if (!checkCollision(currentPiece->x  + 1, currentPiece->y)) currentPiece->x += 1;
+                                Mix_PlayChannel(-1, sfxMove, 0);
                                 break;
                         case SDLK_DOWN:
                         case SDLK_s:
                                 if (!checkCollision(currentPiece->x , currentPiece->y + 1)) currentPiece->y += 1;
+                                Mix_PlayChannel(-1, sfxMove, 0);
                                 break;
                         case SDLK_q:
                                 currentPiece->tryRotateCCW(board);
+                                Mix_PlayChannel(-1, sfxRotateCCW, 0);
                                 break;
                         case SDLK_e:
                                 currentPiece->tryRotateCW(board);
+                                Mix_PlayChannel(-1, sfxRotateCW, 0);
                                 break;
                         case SDLK_p:
+                                Mix_PlayChannel(-1, sfxPause, 0);
+                                Mix_HaltMusic();
                                 state = GameState::Paused;
                             default: ;
                     }
                     break;
                 case GameState::Paused:
                     if (e.key.keysym.sym == SDLK_p) {
+                        Mix_PlayChannel(-1, sfxPause, 0);
+                        Mix_PlayMusic(gameBGM, -1);
                         state = GameState::Playing;
                     }
                     break;
@@ -219,6 +259,7 @@ void Game::processInput() {
                     }
                     if (e.key.keysym.sym == SDLK_RETURN) {
                         startFreshGame();
+                        Mix_PlayChannel(-1, sfxStartOrContinue, 0);
                         state = GameState::Playing;
                     }
                     break;
@@ -290,6 +331,7 @@ void Game::update() {
 
             int cleared = board.clearFullLines();
             if (cleared > 0) {
+                Mix_PlayChannel(-1, sfxLineClear, 0);
                 linesCleared += cleared;
                 static const int pointsPer[5] = {0, 100, 300, 500, 800 };
                 score += pointsPer[cleared] * level;
@@ -303,6 +345,7 @@ void Game::update() {
 
             if (checkCollision(currentPiece->x, currentPiece->y)) {
                 state = GameState::GameOver;
+                Mix_PlayChannel(-1, sfxGameOver, 0);
             }
         }
     }
@@ -359,6 +402,12 @@ Game::~Game() {
     if (gameOverInstrTexture) SDL_DestroyTexture(gameOverInstrTexture);
     if (pauseTexture)         SDL_DestroyTexture(pauseTexture);
 
+    if (menuBGM)                  Mix_FreeMusic(menuBGM);
+    if (sfxRotateCCW)         Mix_FreeChunk(sfxRotateCCW);
+    if (sfxDrop)              Mix_FreeChunk(sfxDrop);
+
+    Mix_CloseAudio();
+    Mix_Quit();
     IMG_Quit();
     if (font) TTF_CloseFont(font);
     TTF_Quit();
