@@ -14,6 +14,7 @@
 enum class GameState {
     StartScreen,
     Playing,
+    Paused,
     GameOver
 };
 
@@ -37,8 +38,14 @@ private:
     SDL_Rect     gameOverDst;
     SDL_Rect     instrDst;
 
+    SDL_Texture* pauseTexture = nullptr;
+    SDL_Rect pauseDst;
+
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
+    int windowWidth = 0;
+    int windowHeight = 0;
+
     bool running = false;
 
     int score = 0;
@@ -60,7 +67,7 @@ private:
 
     void processInput();
     void update();
-    void render() const;
+    void render();
 
     void startFreshGame();
 };

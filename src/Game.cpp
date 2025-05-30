@@ -43,10 +43,9 @@ bool Game::init(const char* title, int w, int h) {
     }
 
     // 4) Compute board offsets
-    int winW, winH;
-    SDL_GetWindowSize(window, &winW, &winH);
-    int offsetX = (winW  - BOARD_PIX_W) / 2;
-    int offsetY = (winH  - BOARD_PIX_H) / 2;
+    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+    int offsetX = (windowWidth  - BOARD_PIX_W) / 2;
+    int offsetY = (windowHeight  - BOARD_PIX_H) / 2;
 
     // 5) “Press Any Key” texture
     SDL_Color white = {255,255,255,255};
@@ -74,15 +73,15 @@ bool Game::init(const char* title, int w, int h) {
     // 7) Center cat+text group
     const int spacing = 20;
     int groupH = logoH + spacing + textH;
-    int groupY = (winH - groupH) / 2;
+    int groupY = (windowHeight - groupH) / 2;
     startScreenDst = {
-        (winW - logoW) / 2,
+        (windowWidth - logoW) / 2,
         groupY,
         logoW,
         logoH
     };
     startDst = {
-        (winW - textW) / 2,
+        (windowWidth - textW) / 2,
         groupY + logoH + spacing,
         textW,
         textH
@@ -100,7 +99,7 @@ bool Game::init(const char* title, int w, int h) {
     SDL_FreeSurface(goTitleSurf);
 
     SDL_Surface* goInstrSurf = TTF_RenderText_Blended(
-        font, "Q: Quit    Any Key: Restart", white);
+        font, "Q: Quit    Enter: Continue?", white);
     if (!goInstrSurf) {
         std::cerr << "TTF_RenderText Error: " << TTF_GetError() << "\n";
         return false;
@@ -110,10 +109,26 @@ bool Game::init(const char* title, int w, int h) {
     SDL_FreeSurface(goInstrSurf);
 
     // center GameOver & instructions
-    gameOverDst.x = (winW - gameOverDst.w) / 2;
-    gameOverDst.y = (winH - gameOverDst.h) / 2 - 20;
-    instrDst.x    = (winW - instrDst.w)    / 2;
+    gameOverDst.x = (windowWidth - gameOverDst.w) / 2;
+    gameOverDst.y = (windowHeight - gameOverDst.h) / 2 - 20;
+    instrDst.x    = (windowWidth - instrDst.w)    / 2;
     instrDst.y    = gameOverDst.y + gameOverDst.h + 10;
+
+
+    // Create Paused Texture.
+    SDL_Surface* pauseSurf = TTF_RenderText_Blended(font, "Paused (Press P to unpause)", white);
+    if (!pauseSurf) {
+        std::cerr << "TTF_RenderText Error: " << TTF_GetError() << "\n";
+        return false;
+    }
+
+    pauseTexture = SDL_CreateTextureFromSurface(renderer, pauseSurf);
+    pauseDst.w = pauseSurf->w;
+    pauseDst.h = pauseSurf->h;
+    SDL_FreeSurface(pauseSurf);
+
+    pauseDst.x = (windowWidth  - pauseDst.w) / 2;
+    pauseDst.y = (windowHeight  - pauseDst.h) / 2;
 
     // 9) Final setup
     gfx    = new Renderer(renderer, offsetX, offsetY, font);
@@ -188,14 +203,21 @@ void Game::processInput() {
                         case SDLK_e:
                                 currentPiece->tryRotateCW(board);
                                 break;
+                        case SDLK_p:
+                                state = GameState::Paused;
                             default: ;
                     }
                     break;
-
+                case GameState::Paused:
+                    if (e.key.keysym.sym == SDLK_p) {
+                        state = GameState::Playing;
+                    }
+                    break;
                 case GameState::GameOver:
                     if (e.key.keysym.sym == SDLK_q) {
                         running = false;
-                    } else {
+                    }
+                    if (e.key.keysym.sym == SDLK_RETURN) {
                         startFreshGame();
                         state = GameState::Playing;
                     }
@@ -287,9 +309,10 @@ void Game::update() {
 }
 
 
-void Game::render() const {
+void Game::render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+    SDL_Rect full{ 0, 0, windowWidth, windowHeight };
 
     switch (state) {
         case GameState::StartScreen:
@@ -305,6 +328,21 @@ void Game::render() const {
             gfx->drawScore(score, level, linesCleared);
             break;
 
+        case GameState::Paused:
+            gfx->drawBoard(board);
+            gfx->drawTetromino(*currentPiece);
+            gfx->drawScore(score, level, linesCleared);
+
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 160);
+            SDL_RenderFillRect(renderer, &full);
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+            SDL_RenderCopy(renderer, pauseTexture, nullptr, &pauseDst);
+            break;
+
+
+
         case GameState::GameOver:
             SDL_RenderCopy(renderer, gameOverTexture, nullptr, &gameOverDst);
             SDL_RenderCopy(renderer, gameOverInstrTexture, nullptr, &instrDst);
@@ -315,23 +353,20 @@ void Game::render() const {
 }
 
 Game::~Game() {
-    // destroy every texture you created
     if (startScreenTexture)   SDL_DestroyTexture(startScreenTexture);
     if (startTexture)         SDL_DestroyTexture(startTexture);
     if (gameOverTexture)      SDL_DestroyTexture(gameOverTexture);
     if (gameOverInstrTexture) SDL_DestroyTexture(gameOverInstrTexture);
+    if (pauseTexture)         SDL_DestroyTexture(pauseTexture);
 
-    // quit subsystems
     IMG_Quit();
     if (font) TTF_CloseFont(font);
     TTF_Quit();
 
-    // the SDL window/renderer
     if (renderer) SDL_DestroyRenderer(renderer);
     if (window)   SDL_DestroyWindow(window);
     SDL_Quit();
 
-    // clean up any heap-allocated game objects
     delete currentPiece;
     delete gfx;
 }
