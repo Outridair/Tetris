@@ -3,17 +3,15 @@
 
 ## Introduction
 
-Some basic game programming to get myself familiar with how this works.
+Some basic game programming to get myself familiar with how this works. Simulates the original tetris game. 
 
 ## Setup
-
-Using CLion from Jetbrains. on MacOS Sequoia  
+Using CLion from Jetbrains. on MacOS Sequoia.  
+  
 `brew install sdl2`  
-`brew install sdl2_ttf`
-
-## Initial Run
-TODO
-
+`brew install sdl2_ttf`  
+`brew install sdl2_image`  
+`brew install sdl2_mixer`
 
 ## Disclaimer
 
