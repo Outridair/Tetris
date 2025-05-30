@@ -12,5 +12,4 @@ Using CLion from Jetbrains. on MacOS Sequoia
 `brew install sdl2_ttf`
 
 ## Initial Run
-The CLion build/run/debug command should suffice. 
-
+TODO

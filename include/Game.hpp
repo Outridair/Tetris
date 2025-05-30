@@ -6,10 +6,16 @@
 #define GAME_HPP
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 #include "Board.hpp"
 #include "Tetromino.hpp"
 #include "Renderer.hpp"
 
+enum class GameState {
+    StartScreen,
+    Playing,
+    GameOver
+};
 
 class Game {
 public:
@@ -17,6 +23,16 @@ public:
     void run();
     ~Game();
 private:
+    GameState state = GameState::StartScreen;
+    SDL_Texture* startTexture = nullptr;
+    SDL_Texture* startScreenTexture = nullptr;
+
+    SDL_Rect startDst = {};
+    SDL_Rect startScreenDst = {};
+
+    Uint32 blinkTimer = 0;
+    bool showText = true;
+
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     bool running = false;
@@ -40,7 +56,7 @@ private:
 
     void processInput();
     void update();
-    void render();
+    void render() const;
 };
 
 

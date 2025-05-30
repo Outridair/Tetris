@@ -4,6 +4,7 @@ project(TetrisSDL)
 set(CMAKE_CXX_STANDARD 17)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_ttf CONFIG REQUIRED)
+find_package(SDL2_image CONFIG REQUIRED)
 
 add_executable(TetrisSDL
         src/main.cpp
@@ -15,4 +16,5 @@ add_executable(TetrisSDL
 target_link_libraries(TetrisSDL PRIVATE
         SDL2::SDL2            # brings in SDL2 headers & libs
         SDL2_ttf::SDL2_ttf    # brings in TTF headers & libs
+        SDL2_image::SDL2_image
 )
