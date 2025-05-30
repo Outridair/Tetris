@@ -241,7 +241,7 @@ void Game::processInput() {
                                 break;
                         case SDLK_p:
                                 Mix_PlayChannel(-1, sfxPause, 0);
-                                Mix_HaltMusic();
+                                Mix_PauseMusic();
                                 state = GameState::Paused;
                             default: ;
                     }
@@ -249,7 +249,7 @@ void Game::processInput() {
                 case GameState::Paused:
                     if (e.key.keysym.sym == SDLK_p) {
                         Mix_PlayChannel(-1, sfxPause, 0);
-                        Mix_PlayMusic(gameBGM, -1);
+                        Mix_ResumeMusic();
                         state = GameState::Playing;
                     }
                     break;
