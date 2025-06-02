@@ -19,6 +19,7 @@ public:
     void drawBoard(const Board& board);
     void drawTetromino(const Tetromino& t);
     void drawScore(int score, int level, int lines);
+    void drawNextPiece(Tetromino::Type nextType);
 
 private:
     SDL_Renderer* ren;
@@ -27,6 +28,7 @@ private:
     TTF_Font* font;
 
     void drawCell(int x, int y, SDL_Color color);
+
 };
 
 

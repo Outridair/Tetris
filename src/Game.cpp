@@ -164,8 +164,7 @@ bool Game::init(const char* title, int w, int h) {
     blinkTimer = SDL_GetTicks();
     showText   = true;
 
-    // seed RNG & reset game state (spawns first piece properly)
-    std::srand(unsigned(std::time(nullptr)));
+    spawnFirstPiece();
 
     running = true;
     Mix_PlayMusic(menuBGM, -1);
@@ -197,7 +196,7 @@ void Game::startFreshGame() {
 
     delete currentPiece;
     currentPiece = nullptr;
-    spawnNewPiece();
+    spawnFirstPiece();
 }
 
 void Game::processInput() {
@@ -296,16 +295,17 @@ void Game::lockPiece() {
                              type);
 }
 
-void Game::spawnNewPiece() {
+void Game::spawnFirstPiece() {
+    nextType = Tetromino::randomType();
+    Tetromino::Type fresh = Tetromino::randomType();
+    currentPiece = new Tetromino(nextType);
+    nextType = fresh;
+}
+
+void Game::spawnNextPiece() {
     delete currentPiece;
-    currentPiece = new Tetromino(
-        static_cast<Tetromino::Type>(std::rand() % 7)
-    );
-    currentPiece->x = BOARD_WIDTH/2 - 2;
-    currentPiece->y = 0;
-    // reset drop timer so the new piece doesn't immediately fall
-    lastDropTime = SDL_GetTicks();
-    SDL_Log("Spawned Tetromino: %s", toString(currentPiece->getType()));
+    currentPiece = new Tetromino(nextType);
+    nextType = Tetromino::randomType();
 }
 
 void Game::update() {
@@ -341,7 +341,7 @@ void Game::update() {
                 dropInterval = std::max(50u, 500u - (level -1 ) * 25);
             }
 
-            spawnNewPiece();
+            spawnNextPiece();
 
             if (checkCollision(currentPiece->x, currentPiece->y)) {
                 state = GameState::GameOver;
@@ -369,6 +369,7 @@ void Game::render() {
             gfx->drawBoard(board);
             gfx->drawTetromino(*currentPiece);
             gfx->drawScore(score, level, linesCleared);
+            gfx->drawNextPiece(nextType);
             break;
 
         case GameState::Paused:

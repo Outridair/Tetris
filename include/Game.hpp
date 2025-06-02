@@ -72,20 +72,22 @@ private:
 
     Board board;
     Tetromino* currentPiece = nullptr;
+    Tetromino::Type nextType;
     Renderer* gfx = nullptr;
 
     Uint32 dropInterval = 500;
     Uint32 lastDropTime = 0;
 
-    bool checkCollision(int newX, int newY) const;
+    [[nodiscard]] bool checkCollision(int newX, int newY) const;
     void lockPiece();
-    void spawnNewPiece();
 
     void processInput();
     void update();
     void render();
 
     void startFreshGame();
+    void spawnFirstPiece();
+    void spawnNextPiece();
 };
 
 

@@ -6,6 +6,7 @@
 #include "../include/Board.hpp"
 #include <SDL.h>
 #include <vector>
+#include <random>
 
 static const std::vector<std::pair<int,int>> kickOffsets = {
     {0, 0},
@@ -167,5 +168,16 @@ bool Tetromino::collides(const Board& board,
         }
     }
     return false;
+}
+
+static std::mt19937& rng() {
+    static std::random_device rd;
+    static std::mt19937 eng(rd());
+    return eng;
+}
+
+Tetromino::Type Tetromino::randomType() {
+    static std::uniform_int_distribution<int> dist(0, 6);
+    return static_cast<Type>(dist(rng()));
 }
 

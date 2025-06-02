@@ -61,3 +61,70 @@ void Renderer::drawScore(int score, int level, int lines) {
     SDL_DestroyTexture(tex);
 }
 
+void Renderer::drawNextPiece(Tetromino::Type nextType) {
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Surface* labelSurf = TTF_RenderText_Blended(font, "Next", white);
+    SDL_Texture* labelTex = SDL_CreateTextureFromSurface(ren, labelSurf);
+    int labelW = labelSurf->w;
+    int labelH = labelSurf->h;
+    SDL_FreeSurface(labelSurf);
+
+    constexpr int gridSize = 4 * CELL_SIZE;
+
+    constexpr int gap = 10;  // px between label and grid
+    int innerW = std::max(labelW, gridSize);
+    int innerH = labelH + gap + gridSize;
+
+    constexpr int padding = 8;  // px of space inside the border
+    constexpr int margin  = 20; // px between board and preview-border
+
+
+    int borderW = innerW + 2 * padding;
+    int borderH = innerH + 2 * padding;
+
+    int borderX = offsetX - margin - borderW;
+    int borderY = offsetY;  // align top of border with top of board
+
+    SDL_Rect borderRect { borderX, borderY, borderW, borderH };
+
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(ren, 0, 0, 0, 128); // half-transparent background
+    SDL_RenderFillRect(ren, &borderRect);
+
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+    SDL_RenderDrawRect(ren, &borderRect);
+
+    int labelDstX = borderX + padding + (innerW - labelW) / 2;
+    int labelDstY = borderY + padding;
+    SDL_Rect labelDst { labelDstX, labelDstY, labelW, labelH };
+    SDL_RenderCopy(ren, labelTex, nullptr, &labelDst);
+    SDL_DestroyTexture(labelTex);
+
+    int gridStartX = borderX + padding + (innerW - gridSize) / 2;
+    int gridStartY = labelDstY + labelH + gap;
+
+    Tetromino preview(nextType);
+    const auto& shape = preview.currentShape();
+    SDL_Color color   = preview.getColor();
+
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            if (shape[i][j]) {
+                SDL_Rect cellRect {
+                    gridStartX + j * CELL_SIZE,
+                    gridStartY + i * CELL_SIZE,
+                    CELL_SIZE,
+                    CELL_SIZE
+                };
+                // fill cell
+                SDL_SetRenderDrawColor(ren, color.r, color.g, color.b, color.a);
+                SDL_RenderFillRect(ren, &cellRect);
+
+                // draw a thin dark border around each cell
+                SDL_SetRenderDrawColor(ren, 50, 50, 50, 255);
+                SDL_RenderDrawRect(ren, &cellRect);
+            }
+        }
+    }
+}

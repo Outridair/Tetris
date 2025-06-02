@@ -6,6 +6,7 @@
 #define TETROMINO_HPP
 #include <array>
 #include <SDL_pixels.h>
+#include <random>
 
 class Board;
 using Shape = std::array<std::array<int, 4>,4>;
@@ -13,6 +14,7 @@ using Shape = std::array<std::array<int, 4>,4>;
 class Tetromino {
 public:
     enum Type : int { I, O, T, S, Z, J, L, EMPTY };
+    static Type randomType();
     explicit Tetromino(Type t);
     [[nodiscard]] Type getType() const { return type; }
     [[nodiscard]] const Shape& currentShape() const;
