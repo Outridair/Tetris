@@ -32,10 +32,10 @@ bool Game::init(const char* title, int w, int h) {
         return false;
     }
 
-    menuBGM = Mix_LoadMUS("../assets/sound/music/mainMenuTheme.mp3");
+    menuBGM = Mix_LoadMUS("../assets/sound/music/mainMenuTheme.ogg");
     if (!menuBGM) std::cerr << "Mix_LoadMUS Error: " << Mix_GetError() << "\n";
 
-    gameBGM = Mix_LoadMUS("../assets/sound/music/inGameMusic.mp3");
+    gameBGM = Mix_LoadMUS("../assets/sound/music/inGameMusic.ogg");
     if (!gameBGM) std::cerr << "Mix_LoadMUS Error: " << Mix_GetError() << "\n";
 
     sfxDrop = Mix_LoadWAV("../assets/sound/effects/blockDrop.ogg");
